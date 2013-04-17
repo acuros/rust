@@ -1316,39 +1316,37 @@ pub impl Parser {
                 let hi = self.span.hi;
 
                 return self.mk_mac_expr(lo, hi, mac_invoc_tt(pth, tts));
-            } else if *self.token == token::LBRACE {
-                // This might be a struct literal.
-                if self.looking_at_record_literal() {
-                    // It's a struct literal.
-                    self.bump();
-                    let mut fields = ~[];
-                    let mut base = None;
+            } else if (*self.token == token::LBRACE) {
+                // STRUCT literal expression
+                self.bump();
+                let mut fields = ~[];
+                let mut base = None;
 
-                    fields.push(self.parse_field(token::COLON));
-                    while *self.token != token::RBRACE {
-                        if self.try_parse_obsolete_with() {
-                            break;
-                        }
-
-                        self.expect(&token::COMMA);
-
-                        if self.eat(&token::DOTDOT) {
-                            base = Some(self.parse_expr());
-                            break;
-                        }
-
-                        if *self.token == token::RBRACE {
-                            // Accept an optional trailing comma.
-                            break;
-                        }
-                        fields.push(self.parse_field(token::COLON));
+                fields.push(self.parse_field(token::COLON));
+                while *self.token != token::RBRACE {
+                    if self.try_parse_obsolete_with() {
+                        break;
                     }
 
-                    hi = pth.span.hi;
-                    self.expect(&token::RBRACE);
-                    ex = expr_struct(pth, fields, base);
-                    return self.mk_expr(lo, hi, ex);
+                    self.expect(&token::COMMA);
+
+                    if self.eat(&token::DOTDOT) {
+                        base = Some(self.parse_expr());
+                        break;
+                    }
+
+                    if *self.token == token::RBRACE {
+                        // Accept an optional trailing comma.
+                        break;
+                    }
+                    fields.push(self.parse_field(token::COLON));
                 }
+
+                hi = pth.span.hi;
+                self.expect(&token::RBRACE);
+                ex = expr_struct(pth, fields, base);
+                return self.mk_expr(lo, hi, ex);
+
             }
 
             hi = pth.span.hi;
@@ -2016,15 +2014,7 @@ pub impl Parser {
         }
     }
 
-    // For distingishing between record literals and blocks
-    fn looking_at_record_literal(&self) -> bool {
-        let lookahead = self.look_ahead(1);
-        *self.token == token::LBRACE &&
-            (self.token_is_keyword(&~"mut", &lookahead) ||
-             (is_plain_ident(&lookahead) &&
-              self.look_ahead(2) == token::COLON))
-    }
-
+    // parse a match expr
     fn parse_match_expr(&self) -> @expr {
         let lo = self.last_span.lo;
         let discriminant = self.parse_expr();
