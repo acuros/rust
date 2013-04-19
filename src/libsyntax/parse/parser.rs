@@ -3799,7 +3799,7 @@ pub impl Parser {
 
             let vis = self.parse_visibility();
 
-            let ident, needs_comma, kind;
+            let ident, kind;
             let mut args = ~[], disr_expr = None;
             ident = self.parse_ident();
             if self.eat(&token::LBRACE) {
@@ -3828,7 +3828,6 @@ pub impl Parser {
             } else {
                 kind = tuple_variant_kind(~[]);
             }
-            needs_comma = true;
 
             let vr = ast::variant_ {
                 name: ident,
@@ -3840,7 +3839,7 @@ pub impl Parser {
             };
             variants.push(spanned(vlo, self.last_span.hi, vr));
 
-            if needs_comma && !self.eat(&token::COMMA) { break; }
+            if !self.eat(&token::COMMA) { break; }
         }
         self.expect(&token::RBRACE);
         if (have_disr && !all_nullary) {
