@@ -20,9 +20,7 @@ use to_str;
 #[cfg(notest)] use cmp::{Eq, Ord};
 #[cfg(stage0,notest)]
 use ops::{Add, Sub, Mul, Div, Modulo, Neg};
-#[cfg(stage1,notest)]
-#[cfg(stage2,notest)]
-#[cfg(stage3,notest)]
+#[cfg(not(stage0),notest)]
 use ops::{Add, Sub, Mul, Quot, Rem, Neg};
 
 pub use cmath::c_float_targ_consts::*;
